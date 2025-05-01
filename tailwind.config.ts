@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,18 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+                // Custom seminar booking system colors
+                'academy-blue': '#1a365d',
+                'academy-light-blue': '#2c5282',
+                'academy-accent': '#4fd1c5',
+                'academy-background': '#f7fafc',
+                'academy-card': '#ffffff',
+                'academy-text': '#2d3748',
+                'academy-muted': '#718096',
+                'academy-success': '#48bb78',
+                'academy-warning': '#ed8936',
+                'academy-danger': '#e53e3e',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,12 +96,21 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+                'fade-in': {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' }
+                }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+                'fade-in': 'fade-in 0.5s ease-in-out'
+			},
+            fontFamily: {
+                'sans': ['Inter', 'sans-serif'],
+                'heading': ['Poppins', 'sans-serif']
+            }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
