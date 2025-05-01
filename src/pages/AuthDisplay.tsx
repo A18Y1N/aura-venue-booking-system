@@ -54,7 +54,7 @@ const AuthDisplay = () => {
               </Button>
               
               <Button 
-                onClick={() => handleNavigate('/admin-login')} 
+                onClick={() => handleNavigate('/admin-login')}
                 variant="outline" 
                 className="bg-transparent border-white text-white hover:bg-white/20"
               >
