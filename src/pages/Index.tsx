@@ -1,15 +1,8 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import AuthDisplay from "./AuthDisplay";
 
 const Index = () => {
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    navigate("/");
-  }, [navigate]);
-  
-  return null;
+  return <AuthDisplay />;
 };
 
 export default Index;
