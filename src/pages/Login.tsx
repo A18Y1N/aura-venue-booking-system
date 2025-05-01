@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -42,7 +41,7 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    
+
     try {
       const success = await login(data.email, data.password);
       if (success) {
@@ -54,8 +53,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-academy-background">
-      <div className="absolute top-6 left-6">
+    <div className="min-h-screen relative z-0 flex flex-col bg-academy-background">
+      {/* Top Back Button */}
+      <div className="absolute top-6 left-6 z-20">
         <Button
           variant="ghost"
           className="gap-2 text-academy-text"
@@ -65,12 +65,13 @@ const Login = () => {
         </Button>
       </div>
 
+      {/* Main Content */}
       <div className="flex-grow flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md z-10"
         >
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="text-center mb-8">
@@ -87,8 +88,8 @@ const Login = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="email@example.com" 
+                        <Input
+                          placeholder="email@example.com"
                           {...field}
                           autoComplete="email"
                           className="h-12"
@@ -129,8 +130,8 @@ const Login = () => {
                   )}
                 />
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-academy-blue hover:bg-academy-light-blue h-12"
                   disabled={isLoading}
                 >

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,7 @@ const AuthDisplay = () => {
             
             {hoveredButton === "login" && (
               <motion.div 
-                className="absolute inset-0 bg-white/5"
+                className="absolute inset-0 bg-white/5 pointer-events-none"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -93,7 +92,7 @@ const AuthDisplay = () => {
             
             {hoveredButton === "register" && (
               <motion.div 
-                className="absolute inset-0 bg-white/5"
+                className="absolute inset-0 bg-white/5 pointer-events-none"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
