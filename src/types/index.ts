@@ -1,3 +1,9 @@
+export interface IUser {
+  _id: string;
+  name: string;
+  email: string;
+  role: 'faculty' | 'admin';
+}
 
 export interface SeminarHall {
   id: string;

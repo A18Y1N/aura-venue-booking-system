@@ -1,113 +1,81 @@
-
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { toast } from "@/components/ui/sonner";
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  isAdmin: boolean;
-}
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import axios from "axios";
+import { IUser } from "@/types";
+import { toast } from "sonner";
 
 interface AuthContextType {
-  user: User | null;
+  user: IUser | null;
   isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (email: string, password: string, isAdmin?: boolean) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    role: string
+  ) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock database for demo (in a real app, this would be a backend API)
-const MOCK_USERS = [
-  {
-    id: '1',
-    email: 'admin@example.com',
-    password: 'admin123',
-    name: 'Admin User',
-    isAdmin: true
-  },
-  {
-    id: '2',
-    email: 'user@example.com',
-    password: 'user123',
-    name: 'Regular User',
-    isAdmin: false
-  }
-];
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
+  const [user, setUser] = useState<IUser | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
-    // Check for stored auth on mount
-    const storedUser = localStorage.getItem('seminar-hall-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    const storedUser = localStorage.getItem("seminar-hall-user");
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const login = async (email: string, password: string, isAdmin = false): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const userPool = isAdmin 
-        ? MOCK_USERS.filter(u => u.isAdmin) 
-        : MOCK_USERS;
-      
-      const foundUser = userPool.find(
-        u => u.email === email && u.password === password
+      const res = await axios.post<{ token: string; user: IUser }>(
+        "/api/auth/login",
+        { email, password }
       );
-      
-      if (!foundUser) {
-        toast.error("Invalid credentials. Please try again.");
-        return false;
-      }
-      
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword as User);
-      localStorage.setItem('seminar-hall-user', JSON.stringify(userWithoutPassword));
-      toast.success(`Welcome back, ${foundUser.name}!`);
+      const { token, user } = res.data;
+
+      localStorage.setItem("seminar-hall-user", JSON.stringify(user));
+      localStorage.setItem("seminar-hall-token", token);
+
+      setUser(user);
+      toast.success(`Welcome, ${user.name}!`);
       return true;
-    } catch (error) {
-      toast.error("Login failed. Please try again later.");
+    } catch (err) {
+      const message =
+        (err as any)?.response?.data?.message ?? "Login failed";
+      toast.error(message);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    role: string
+  ): Promise<boolean> => {
     setIsLoading(true);
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const existingUser = MOCK_USERS.find(u => u.email === email);
-      if (existingUser) {
-        toast.error("Email already exists. Please try another one.");
-        return false;
-      }
-      
-      // In a real app, this would be handled by the backend
-      const newUserId = (MOCK_USERS.length + 1).toString();
-      const newUser = { id: newUserId, email, name, isAdmin: false };
-      
-      // We wouldn't store this in state/local storage in a real app
-      MOCK_USERS.push({ ...newUser, password });
-      
-      toast.success("Registration successful! Please log in.");
+      const res = await axios.post<{ message: string }>(
+        "/api/auth/register",
+        { name, email, password, role }
+      );
+      toast.success(res.data.message || "Registration successful.");
       return true;
-    } catch (error) {
-      toast.error("Registration failed. Please try again later.");
+    } catch (err) {
+      const message =
+        (err as any)?.response?.data?.message ?? "Registration failed";
+      toast.error(message);
       return false;
     } finally {
       setIsLoading(false);
@@ -115,20 +83,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    localStorage.removeItem("seminar-hall-user");
+    localStorage.removeItem("seminar-hall-token");
     setUser(null);
-    localStorage.removeItem('seminar-hall-user');
-    toast.info("You have been logged out.");
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isLoading, 
-      isAuthenticated: !!user, 
-      login, 
-      register, 
-      logout 
-    }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -136,8 +97,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
