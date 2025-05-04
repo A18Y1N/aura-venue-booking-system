@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, Building, AlertTriangle, Users, Calendar } from "lucide-react";
 import AdminNavbar from "@/components/AdminNavbar";
@@ -8,30 +7,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
+  useEffect(() => {
+    if (user && user.role !== "admin") {
+      toast.error("Access denied. Admins only.");
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  if (!user || user.role !== "admin") {
+    return null;
+  }
+
   const pendingRequests = mockBookings.filter(booking => booking.status === "pending");
-  
-  // Calculate stats
+
   const totalHalls = seminarHalls.length;
   const totalBookings = mockBookings.length;
   const pendingCount = pendingRequests.length;
-  
-  // Recent pending requests for the dashboard
   const recentPendingRequests = pendingRequests.slice(0, 3);
-  
-  if (!user?.isAdmin) {
-    navigate("/login");
-    return null;
-  }
-  
+
   return (
     <div className="min-h-screen bg-academy-background">
       <AdminNavbar />
-      
+
       <main className="container mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -42,7 +45,7 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold text-academy-text">Admin Dashboard</h1>
             <p className="text-academy-muted">Manage seminar hall bookings and requests</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardHeader className="pb-2">
@@ -58,7 +61,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Pending Requests</CardDescription>
@@ -73,7 +76,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Total Bookings</CardDescription>
@@ -88,7 +91,7 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Users</CardDescription>
@@ -104,7 +107,7 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -144,7 +147,7 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2 mt-4 md:mt-0">
                             <Button
                               size="sm"
@@ -171,7 +174,7 @@ const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Hall Status</CardTitle>

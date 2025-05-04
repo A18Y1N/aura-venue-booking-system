@@ -1,16 +1,19 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // ✅ Backend base URL
+const instance = axios.create({
+  baseURL: "http://localhost:5000/api", // this is why we don't prefix '/api' in calls
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// Automatically add token if present
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+// Optional: Add JWT token to each request if present
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("seminar-hall-token");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 });
 
-export default API;
+export default instance;

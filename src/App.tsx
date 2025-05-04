@@ -1,126 +1,107 @@
+import { Routes, Route, useLocation } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/routing/AdminRoute";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
 
-// Auth Pages
-import AuthDisplay from "./pages/AuthDisplay";
-import Login from "./pages/Login";
-import AdminLogin from "./pages/AdminLogin";
-import Register from "./pages/Register";
+// Layouts
+import AdminLayout from "@/layouts/AdminLayout";
 
-// User Pages
-import Dashboard from "./pages/Dashboard";
-import HallDetail from "./pages/HallDetail";
-import MyBookings from "./pages/MyBookings";
+// Navbars
+import Navbar from "@/components/Navbar";
 
-// Admin Pages
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminRequests from "./pages/AdminRequests";
-
-// Other Pages
-import NotFound from "./pages/NotFound";
-
-// Protected Route Component
-const ProtectedRoute = ({ children, requiresAdmin = false }: { children: React.ReactNode, requiresAdmin?: boolean }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-academy-background">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="text-center"
-        >
-          <div className="w-12 h-12 border-4 border-t-academy-blue rounded-full animate-spin mb-4 mx-auto"></div>
-          <p className="text-academy-text">Loading...</p>
-        </motion.div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/" />;
-  }
-  
-  if (requiresAdmin && !user?.isAdmin) {
-    return <Navigate to="/dashboard" />;
-  }
-  
-  return <>{children}</>;
-};
+// Pages
+import LoginPage from "@/pages/Login";
+import RegisterPage from "@/pages/Register";
+import Dashboard from "@/pages/Dashboard";
+import MyBookings from "@/pages/MyBookings";
+import AdminBookings from "@/pages/AdminBookings";
 
 const queryClient = new QueryClient();
 
-const AppRoutes = () => {
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+// Wrapper to decide and show the appropriate navbar (only for non-admin users)
+const AppLayout = ({ children }: AppLayoutProps) => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const hideNavbar = ["/", "/register"].includes(location.pathname);
+
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<AuthDisplay />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin-login" element={<AdminLogin />} />
-      <Route path="/register" element={<Register />} />
-
-      {/* Protected User Routes */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/hall/:hallId" element={
-        <ProtectedRoute>
-          <HallDetail />
-        </ProtectedRoute>
-      } />
-      <Route path="/my-bookings" element={
-        <ProtectedRoute>
-          <MyBookings />
-        </ProtectedRoute>
-      } />
-      <Route path="/halls" element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
-
-      {/* Protected Admin Routes */}
-      <Route path="/admin-dashboard" element={
-        <ProtectedRoute requiresAdmin={true}>
-          <AdminDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin-requests" element={
-        <ProtectedRoute requiresAdmin={true}>
-          <AdminRequests />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin-halls" element={
-        <ProtectedRoute requiresAdmin={true}>
-          <AdminDashboard />
-        </ProtectedRoute>
-      } />
-
-      {/* Catch-all Route */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      {!hideNavbar && user?.role !== "admin" && <Navbar />}
+      {children}
+    </>
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <AppRoutes />
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <AppLayout>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+
+              {/* User routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-bookings"
+                element={
+                  <ProtectedRoute>
+                    <MyBookings />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin routes */}
+              <Route
+                path="/admin-dashboard"
+                element={
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                }
+              >
+                <Route index element={<Dashboard />} />
+              </Route>
+
+              <Route
+                path="/admin-requests"
+                element={
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                }
+              >
+                <Route index element={<AdminBookings />} />
+              </Route>
+
+              <Route path="*" element={<LoginPage />} />
+            </Routes>
+          </AppLayout>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AuthProvider>
+  );
+};
 
 export default App;

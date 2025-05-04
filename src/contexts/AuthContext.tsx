@@ -5,12 +5,13 @@ import {
   useState,
   ReactNode,
 } from "react";
-import axios from "axios";
+import axios from "@/api/axios";
 import { IUser } from "@/types";
 import { toast } from "sonner";
 
 interface AuthContextType {
   user: IUser | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       const res = await axios.post<{ token: string; user: IUser }>(
-        "/api/auth/login",
+        "/auth/login", // ✅ Fixed URL
         { email, password }
       );
       const { token, user } = res.data;
@@ -67,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       const res = await axios.post<{ message: string }>(
-        "/api/auth/register",
+        "/auth/register", // ✅ Fixed URL
         { name, email, password, role }
       );
       toast.success(res.data.message || "Registration successful.");
@@ -88,8 +89,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const isAuthenticated = !!user;
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, isLoading, login, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
